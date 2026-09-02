@@ -1,0 +1,185 @@
+{
+  "project_name": "Make My Perfume — Mobile-First Luxury Ecommerce Storefront",
+  "archetype": "LUXURY & SWISS RESTRAINT (Editorial Monolith)",
+  "vibe_description": "Clean white gallery canvas, crisp deep carbon text, razor-sharp 1px borders, subtle warm Champagne Gold (#D4AF37 / #C5A059) accents, and editorial typography. Inspired by haute perfumery lookbooks (Elysian, Byredo, Aesop, Bella Vita) with mobile-first thumb ergonomics, bottom-sheet cart drawers, sticky purchase action bars, transparent note pyramid breakdowns, and clear GST/COD/prepaid calculations.",
+  "theme_strategy": {
+    "default_mode": "light",
+    "support_toggle": true,
+    "light_palette": {
+      "background": "#FAFAFA",
+      "surface": "#FFFFFF",
+      "surface_elevated": "#F4F4F5",
+      "text_primary": "#0A0A0A",
+      "text_secondary": "#52525B",
+      "text_muted": "#71717A",
+      "border": "#E4E4E7",
+      "accent_gold": "#C5A059",
+      "accent_gold_hover": "#B38F46",
+      "accent_gold_soft": "#FAF5EA",
+      "badge_bg": "#18181B",
+      "badge_text": "#FFFFFF"
+    },
+    "dark_palette": {
+      "background": "#09090B",
+      "surface": "#121214",
+      "surface_elevated": "#18181B",
+      "text_primary": "#F4F4F5",
+      "text_secondary": "#A1A1AA",
+      "text_muted": "#71717A",
+      "border": "rgba(255, 255, 255, 0.1)",
+      "accent_gold": "#DFBA68",
+      "accent_gold_hover": "#E5C57E",
+      "accent_gold_soft": "rgba(223, 186, 104, 0.12)",
+      "badge_bg": "#FAFAFA",
+      "badge_text": "#09090B"
+    }
+  },
+  "typography": {
+    "headings_font": "Playfair Display, Cormorant Garamond, serif",
+    "subheadings_font": "Playfair Display, serif",
+    "body_font": "Geist Variable, IBM Plex Sans, sans-serif",
+    "mono_font": "Geist Mono, JetBrains Mono, monospace",
+    "scale": {
+      "h1_hero": "text-4xl sm:text-5xl lg:text-6xl font-serif tracking-tight leading-tight",
+      "h2_section": "text-2xl sm:text-3xl lg:text-4xl font-serif tracking-tight",
+      "h3_card": "text-lg sm:text-xl font-medium tracking-normal",
+      "label_overline": "text-xs uppercase tracking-[0.2em] font-mono text-[#C5A059]",
+      "body_text": "text-sm sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-300",
+      "price_highlight": "text-lg sm:text-xl font-semibold tracking-tight font-sans"
+    }
+  },
+  "layout_and_spacing": {
+    "mobile_first": true,
+    "grid_structure": {
+      "product_listing": "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6",
+      "editorial_bento": "grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-8",
+      "checkout_layout": "grid grid-cols-1 lg:grid-cols-12 gap-8"
+    },
+    "spacing_rules": {
+      "section_padding_y": "py-12 sm:py-20 lg:py-24",
+      "card_inner_padding": "p-4 sm:p-6",
+      "container_max_width": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    }
+  },
+  "header_and_navigation": {
+    "announcement_bar": {
+      "text": "Complimentary shipping on orders over ₹999 · Extra 10% off on Prepaid orders",
+      "bg": "bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900",
+      "typography": "text-xs font-medium tracking-wide text-center py-2 px-4"
+    },
+    "header_bar": {
+      "style": "sticky top-0 z-40 backdrop-blur-xl bg-white/90 dark:bg-zinc-950/90 border-b border-zinc-200 dark:border-zinc-800 transition-colors",
+      "brand_wordmark": "MAKE MY PERFUME",
+      "brand_wordmark_style": "font-serif tracking-[0.25em] text-base sm:text-xl font-bold uppercase",
+      "links": [
+        { "name": "Shop All", "href": "/collection" },
+        { "name": "Best Sellers", "href": "/collection?category=bestsellers" },
+        { "name": "Fragrance Finder", "href": "/#scent-finder" },
+        { "name": "Latest News", "href": "/news" },
+        { "name": "About", "href": "/about" },
+        { "name": "Contact", "href": "/contact" }
+      ],
+      "actions": [
+        { "type": "search_button", "test_id": "nav-search-button" },
+        { "type": "theme_toggle", "test_id": "theme-toggle-button" },
+        { "type": "cart_drawer_trigger", "test_id": "cart-trigger-button", "shows_count": true }
+      ]
+    }
+  },
+  "key_components": {
+    "hero_section": {
+      "style": "Cinematic luxury split banner with prominent fragrance hero bottle, gold overline badge, editorial title with italicized emphasis, and quick action dual CTAs.",
+      "headline": "A SCENT TO REMEMBER.",
+      "subheadline": "Fragrance is not what you wear. It is what remains. Handcrafted Eau de Parfum editions.",
+      "ctas": [
+        { "label": "Explore Collection", "link": "/collection", "style": "primary-gold" },
+        { "label": "Find Your Scent", "link": "#scent-finder", "style": "outline-dark" }
+      ]
+    },
+    "product_card": {
+      "style": "Minimalist gallery card with high quality imagery, hover subtle zoom (scale-105), quick 'Add to Cart' overlay/button, fragrance category tag, size indicator (e.g. 50ml / 100ml), star rating pill, and clean INR price display with GST inclusive badge.",
+      "hover_effects": "transition-transform duration-500 ease-out",
+      "badges": ["Bestseller", "Prepaid -10% Eligible", "New Release", "Unisex"]
+    },
+    "scent_notes_accordion_or_pyramid": {
+      "concept": "Three-tiered visual pyramid card (Top Notes: 01, Heart Notes: 02, Base Notes: 03) with aroma icons, ingredient chips, and longevity/sillage meters.",
+      "design": "Clean 3-column bento or horizontal tiered layout with gold numbered pills."
+    },
+    "cart_drawer": {
+      "type": "Slide-over right drawer with smooth overlay, persistent guest cart (saved to localStorage + server sync), coupon input ('PREPAID10' / custom), delivery threshold progress bar ('Add ₹X for Free Shipping!'), item quantity stepper, variant picker, and direct 1-click 'Proceed to Guest Checkout'.",
+      "test_id": "cart-drawer"
+    },
+    "checkout_experience": {
+      "type": "2-column seamless checkout with zero forced login. Left: shipping form with Indian states/PIN code auto-fill helper + payment mode selector (Prepaid with 10% discount vs COD with ₹80 transparent fee). Right: sticky order breakdown displaying Subtotal, 18% GST itemization, PAN-India Shipping, Prepaid Savings, COD surcharge, and Final Payable Total.",
+      "razorpay_integration": "Supports Razorpay Modal trigger, test verification API, retry on failed payment, and explicit webhook confirmation view."
+    },
+    "marketing_popup": {
+      "concept": "10% VIP Welcome Newsletter popup with 24-hour cookie suppression, easy close '✕' button, and immediate discount code reveal upon submission.",
+      "test_id": "newsletter-popup"
+    },
+    "placeholder_editing_support": {
+      "concept": "Clean 'Customizer / Content Editor' toggle in developer/store owner view to rapidly tweak hero title, pricing, announcements, reviews, and banner images on the fly with live preview."
+    }
+  },
+  "curated_image_assets": {
+    "hero_banner": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "hero_bottle_citrus": "https://customer-assets-rejwkqb3.emergentagent.net/job_luxury-scent-lab-1/artifacts/0o1nal2d_ChatGPT%20Image%20Aug%2028%2C%202026%2C%2009_42_44%20PM.png",
+    "product_chrome_fresh": "https://images.unsplash.com/photo-1758560936904-4eb0049284aa?auto=format&fit=crop&w=1000&q=85",
+    "product_lucky_woody": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1000&q=85",
+    "product_amber_gold": "https://images.unsplash.com/photo-1622618991746-fe6004db3a47?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "product_nocturne_black": "https://images.unsplash.com/photo-1643797519086-cc9a821fbcfe?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "product_blue_talisman": "https://images.unsplash.com/photo-1717852885839-166ce0621811?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "product_crystal_noir": "https://images.unsplash.com/photo-1615160460366-2c9a41771b51?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "lifestyle_editorial_1": "https://images.unsplash.com/photo-1758871993077-e084cc7eca86?auto=format&fit=crop&w=800&q=85",
+    "lifestyle_editorial_2": "https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?auto=format&fit=crop&w=800&q=85",
+    "lifestyle_editorial_3": "https://images.unsplash.com/photo-1733660227168-444e3c751a1e?auto=format&fit=crop&w=800&q=85"
+  },
+  "test_attributes_and_accessibility": {
+    "mandatory_data_testids": [
+      "navbar-brand-logo",
+      "nav-shop-link",
+      "nav-search-input",
+      "cart-drawer-toggle",
+      "cart-drawer-close",
+      "cart-item-increment",
+      "cart-item-decrement",
+      "cart-item-remove",
+      "cart-checkout-button",
+      "product-card-add-to-cart",
+      "product-card-link",
+      "product-detail-buy-now",
+      "product-detail-add-to-cart",
+      "product-variant-selector",
+      "checkout-form-name",
+      "checkout-form-email",
+      "checkout-form-phone",
+      "checkout-form-address",
+      "checkout-form-city",
+      "checkout-form-state",
+      "checkout-form-pincode",
+      "payment-method-prepaid",
+      "payment-method-cod",
+      "checkout-place-order-button",
+      "newsletter-email-input",
+      "newsletter-submit-button",
+      "contact-form-submit"
+    ],
+    "accessibility_rules": [
+      "All buttons must have explicit accessible names or aria-labels.",
+      "Dialogs and drawers must trap focus and close with Escape key.",
+      "High contrast text adhering to WCAG AA / APCA guidelines (minimum 4.5:1 for body).",
+      "No transparent dropdown or floating header backgrounds that bleed text.",
+      "Respect prefers-reduced-motion for all framer-motion transitions."
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Build the complete responsive mobile-first ecommerce application using React, Vite, Lucide icons, Sonner for toasts, and Tailwind CSS.",
+    "Implement the full catalog with search, mood/scent category filter (Fresh, Woody, Sweet, Spicy, Aquatic, Floral), sort (price, rating, new), and live search query bar.",
+    "Support persistent guest cart state with quantity updates, promo code application ('PREPAID10'), free shipping progress bar, and instant cart drawer.",
+    "Build a production-grade checkout experience calculating 18% GST, free shipping threshold (₹999), ₹80 COD surcharge if Cash on Delivery is selected, and 10% instant prepaid discount when Online Payment is selected.",
+    "Provide interactive Razorpay payment flow simulation with instant order confirmation, invoice summary generation, and fail/retry handlers.",
+    "Include rich product detail pages with variant size pills (50ml, 100ml), olfactory pyramid breakdown (Top, Heart, Base), real customer reviews with star ratings, and related fragrance recommendations.",
+    "Implement the 10% newsletter popup, About page, Contact form with validation & success state, Latest News blog grid & article view, and all legal pages (Privacy, Terms, Shipping & Returns, Refund Policy).",
+    "Add an interactive 'Live Content & Preset Customizer' tool so reviewers can swap hero banners, edit prices, toggle discount rates, and inspect the seeded data easily."
+  ]
+}

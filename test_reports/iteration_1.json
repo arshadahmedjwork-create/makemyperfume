@@ -1,0 +1,32 @@
+{
+  "iteration": 1,
+  "passed": 3,
+  "failed": 1,
+  "flaky": 7,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [
+    {
+      "severity": "medium",
+      "criterion": "Mobile accessibility and interaction quality are acceptable",
+      "evidence": "Browser check mobile-accessibility-no-overflow passed no-horizontal-scroll and accessible controls, but after clicking mobile-menu-toggle the nav remained hidden at 390px (class desktop-nav is-open; CSS only displays nav at min-width 700px)."
+    }
+  ],
+  "action_items": [
+    "Fix mobile open-menu styling so .desktop-nav.is-open is visible below the 700px breakpoint; preserve accessible navigation links."
+  ],
+  "retest_needed": true,
+  "checks": [
+    {"criterion":"Home storefront loads with mobile-first luxury shell, announcement, navigation, hero CTA, featured fragrances, scent finder, review and news sections","name":"home-storefront-shell","lane":"browser","status":"flaky","evidence":"Rerun passed at 390x844: home hero, MAKE MY PERFUME wordmark, Explore collection CTA, seeded Citrus Noir, scent finder, review and news sections visible. Initial attempt only failed due unsupported toHaveScreenshot usage; screenshot captured on rerun."},
+    {"criterion":"Collections support seeded product discovery, live search, mood filters, sorting, and product detail navigation","name":"collection-search-filter-detail","lane":"browser","status":"flaky","evidence":"Rerun passed: Citrus Noir visible, search narrows away Amber Veil, Fresh filter works, product detail shows image, 4.9 rating/128 reviews, notes accordion and Buy now control. Initial note selector was too strict."},
+    {"criterion":"Guest cart supports add-to-cart drawer, quantity controls, removal, and persistence","name":"guest-cart-drawer-persistence","lane":"browser","status":"passed","evidence":"Passed at 390x844: add opens drawer, count is 1, increment/decrement update quantity, close/reopen retains item, remove returns empty cart."},
+    {"criterion":"Buy-now and cart checkout reach a guest checkout without login","name":"guest-checkout-reachable","lane":"browser","status":"flaky","evidence":"Rerun passed: Citrus Noir Buy now reaches checkout with name, email, Indian phone/address/city/state/PIN fields and prepaid/COD options. Initial failure used incorrect product-buy-now test id."},
+    {"criterion":"Checkout pricing is transparent and updates by payment method","name":"checkout-transparent-pricing","lane":"browser","status":"flaky","evidence":"Rerun passed: GST (18%), prepaid savings ₹120, COD handling fee ₹80 and switching payment methods are visible for ₹1,200 Citrus Noir. Initial failures were selector/test-id assumptions."},
+    {"criterion":"Valid guest prepaid order completes through the payment boundary","name":"guest-prepaid-order-confirmation","lane":"browser","status":"flaky","evidence":"Rerun passed: valid guest details submit to confirmation with MMP reference and exact payment confirmed in demo mode message. Initial failure used incorrect Buy now test id and then a non-unique demo text matcher."},
+    {"criterion":"News, About, Contact, policies, and newsletter surfaces are reachable and usable","name":"content-contact-newsletter-policies","lane":"browser","status":"flaky","evidence":"Rerun passed: contact short-message validation and valid success state work; footer News and Privacy navigate to content routes. Initial failures were native form validation and incorrect policy test id."},
+    {"criterion":"Mobile accessibility and interaction quality are acceptable","name":"mobile-accessibility-no-overflow","lane":"browser","status":"failed","evidence":"At 390x844 document scroll width does not overflow and menu/cart controls have accessible names, but clicking Open menu leaves main-navigation hidden despite is-open class. Reproduced on initial run and rerun."},
+    {"criterion":"Collections support seeded product discovery, live search, mood filters, sorting, and product detail navigation","name":"backend-catalog","lane":"backend","status":"passed","evidence":"pytest HTTP assertions passed: GET /api/products?search=Citrus%20Noir 200 with seeded ₹1,200 item; Fresh filter and GET /api/products/citrus-noir 200; missing slug 404."},
+    {"criterion":"Checkout pricing is transparent and updates by payment method; valid guest prepaid order completes through payment boundary","name":"backend-commerce","lane":"backend","status":"passed","evidence":"pytest HTTP assertions passed: POST /api/checkout/preview returns subtotal 1200, GST 194.4, prepaid discount 120, free shipping and total 1274.4; COD fee 80; POST /api/orders/mock returns mocked payment_confirmed and idempotent duplicate; invalid PIN 422."},
+    {"criterion":"News, About, Contact, policies, and newsletter surfaces are reachable and usable","name":"backend-content","lane":"backend","status":"passed","evidence":"pytest HTTP assertions passed: GET /api/news and detail 200; POST /api/subscribers and POST /api/contact 200; short contact message 422."}
+  ]
+}

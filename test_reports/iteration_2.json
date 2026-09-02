@@ -1,0 +1,90 @@
+{
+  "iteration": 2,
+  "passed": 11,
+  "failed": 0,
+  "flaky": 0,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [],
+  "action_items": [],
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Home storefront loads with mobile-first luxury shell, announcement, navigation, hero CTA, featured fragrances, scent finder, review and news sections",
+      "name": "home-storefront-shell",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Named browser check rerun passed at mobile viewport: hero contains MAKE MY PERFUME, Explore collection CTA, seeded Citrus Noir, scent finder, review and news sections."
+    },
+    {
+      "criterion": "Collections support seeded product discovery, live search, mood filters, sorting, and product detail navigation",
+      "name": "collection-search-filter-detail",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Named browser check rerun passed: Citrus Noir discovery, live search narrowing, Fresh mood filter, and detail navigation with image, rating, notes, Buy now and stock state."
+    },
+    {
+      "criterion": "Guest cart supports add-to-cart drawer, quantity controls, removal, and persistence",
+      "name": "guest-cart-drawer-persistence",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Named browser check rerun passed: add opens drawer, count and quantity controls work, close/reopen retains item, and remove empties cart."
+    },
+    {
+      "criterion": "Buy-now and cart checkout reach a guest checkout without login",
+      "name": "guest-checkout-reachable",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Named browser check rerun passed: Buy now reaches guest checkout with name, email, Indian phone/address/city/state/PIN fields and prepaid/COD choices."
+    },
+    {
+      "criterion": "Checkout pricing is transparent and updates by payment method",
+      "name": "checkout-transparent-pricing",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Named browser check rerun passed: ₹1,200 Citrus Noir summary shows GST 18%, free shipping, prepaid savings ₹120, and COD handling fee ₹80 after switching method."
+    },
+    {
+      "criterion": "Valid guest prepaid order completes through the payment boundary",
+      "name": "guest-prepaid-order-confirmation",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Named browser check rerun passed: valid guest prepaid submission reaches confirmation with MMP reference, payable amount, and payment confirmed in demo mode boundary status."
+    },
+    {
+      "criterion": "News, About, Contact, policies, and newsletter surfaces are reachable and usable",
+      "name": "content-contact-newsletter-policies",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Named browser check rerun passed: content and policy navigation works, contact validation and valid success state work, and newsletter surface is usable."
+    },
+    {
+      "criterion": "Mobile accessibility and interaction quality are acceptable",
+      "name": "mobile-accessibility-no-overflow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Named browser check rerun passed at mobile viewport: menu reveals six navigation links, cart/menu controls are named, focus/interaction works, and document has no horizontal overflow."
+    },
+    {
+      "criterion": "Collections support seeded product discovery, live search, mood filters, sorting, and product detail navigation",
+      "name": "backend-catalog",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest HTTP assertions passed: GET /api/products search and Fresh filter plus GET /api/products/citrus-noir returned 200 with seeded data; missing slug returned 404."
+    },
+    {
+      "criterion": "Checkout pricing is transparent and updates by payment method; valid guest prepaid order completes through payment boundary",
+      "name": "backend-commerce",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest HTTP assertions passed: checkout preview pricing, COD fee, mocked order confirmation/idempotency, and invalid PIN 422 behavior."
+    },
+    {
+      "criterion": "News, About, Contact, policies, and newsletter surfaces are reachable and usable",
+      "name": "backend-content",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest HTTP assertions passed: news/detail GETs, subscriber POST, valid contact POST, and short contact message 422."
+    }
+  ]
+}

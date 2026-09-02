@@ -1,0 +1,41 @@
+{
+  "iteration": 3,
+  "passed": 3,
+  "failed": 0,
+  "flaky": 0,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [],
+  "action_items": [],
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Product-detail current price renders the rupee symbol and price numerals at the same size on every seeded product page",
+      "name": "product-detail-price-glyph-parity",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Amber Veil /product/amber-veil: .price-currency and .price-amount computed font-size both 36px, font-family matches /Geist/i, text shows 1,490. Screenshot confirms ₹1,490 rendered with rupee symbol visually matching numeral height."
+    },
+    {
+      "criterion": "Product-detail current price renders the rupee symbol and price numerals at the same size on every seeded product page (all seeded routes)",
+      "name": "product-detail-price-parity-all-seeded",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Looped /product/citrus-noir, amber-veil, nocturne, azure-skin, velvet-fig, saffron-neroli: for each, product-detail-current-price .price-currency font-size === .price-amount font-size; where product-detail-compare-price was visible, its .price-currency/.price-amount sizes also matched. No mismatches thrown."
+    },
+    {
+      "criterion": "Product-detail crossed-out compare price is readable and internally uniform wherever present",
+      "name": "product-detail-price-glyph-parity",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Amber Veil product-detail-compare-price: .price-currency and .price-amount computed font-size both 24px, font-family matches /Geist/i, text shows 1,690 (crossed ₹1,690 confirmed in screenshot)."
+    },
+    {
+      "criterion": "The typography correction is limited to product detail pricing and does not break product selection",
+      "name": "amber-veil-detail-not-broken",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Mobile viewport (390x844) /product/amber-veil: no horizontal overflow (scrollWidth<=clientWidth+1), size selectors (50 ml/100 ml) visible, Add to cart and Buy now buttons visible, note text (Saffron) visible, Add to cart click succeeded without error."
+    }
+  ]
+}
