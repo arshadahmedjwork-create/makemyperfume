@@ -11,8 +11,8 @@ import News from "@/pages/News";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Policy from "@/pages/Policy";
+import Admin from "@/pages/Admin";
 
-// One <Route> per page in src/pages; BrowserRouter already wraps this in main.tsx.
 export default function App() {
   return (
     <AuthProvider>
@@ -28,6 +28,7 @@ export default function App() {
             <Route path="/news/:slug" element={<News />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/:slug" element={<Policy />} />
           </Route>
         </Routes>

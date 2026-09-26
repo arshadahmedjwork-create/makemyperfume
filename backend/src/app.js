@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { supabase } from './supabase.js';
 import { SEED_PRODUCTS, NEWS } from './data/seed.js';
+import { hashPassword, verifyPassword, createAdminToken, verifyAdminToken } from './auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,6 +35,46 @@ function sanitizeUser(u) {
   const { password, ...safe } = u;
   return safe;
 }
+
+function requireAdmin(req, res, next) {
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (!secret) {
+    return res.status(503).json({ detail: 'Admin auth is not configured on the server.' });
+  }
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  if (!verifyAdminToken(token, secret)) {
+    return res.status(401).json({ detail: 'Unauthorized' });
+  }
+  next();
+}
+
+apiRouter.post('/admin/login', (req, res) => {
+  const { email, password } = req.body || {};
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminHash = process.env.ADMIN_PASSWORD_HASH;
+  const secret = process.env.ADMIN_SESSION_SECRET;
+
+  if (!adminEmail || !adminHash || !secret) {
+    return res.status(503).json({
+      detail: 'Admin auth is not configured. Run: node backend/scripts/set-admin-password.js <email> <password>'
+    });
+  }
+
+  // Always verify so a wrong email and a wrong password cost the same time.
+  const passwordOk = verifyPassword(password || '', adminHash);
+  const emailOk = (email || '').toLowerCase().trim() === adminEmail.toLowerCase().trim();
+
+  if (!emailOk || !passwordOk) {
+    return res.status(401).json({ detail: 'Invalid email or password' });
+  }
+
+  res.json({ token: createAdminToken(secret) });
+});
+
+apiRouter.get('/admin/session', requireAdmin, (req, res) => res.json({ valid: true }));
+
+apiRouter.use('/admin/stock', requireAdmin);
 
 // Check if Email Exists
 apiRouter.post('/auth/check-email', async (req, res) => {
@@ -78,8 +119,8 @@ apiRouter.post('/auth/login', async (req, res) => {
     return res.status(401).json({ detail: 'Invalid email or password' });
   }
 
-  if (userObj.password !== password) {
-    return res.status(401).json({ detail: 'Incorrect password' });
+  if (!verifyPassword(password, userObj.password)) {
+    return res.status(401).json({ detail: 'Invalid email or password' });
   }
 
   const token = `token-${crypto.randomUUID()}`;
@@ -102,7 +143,7 @@ apiRouter.post('/auth/register', async (req, res) => {
   const newUser = {
     id: userId,
     email: cleanEmail,
-    password,
+    password: hashPassword(password),
     name: name || '',
     phone: phone || '',
     address: address || '',
@@ -114,10 +155,12 @@ apiRouter.post('/auth/register', async (req, res) => {
 
   usersCache.set(cleanEmail, newUser);
 
-  try {
-    await supabase.from('users').upsert(newUser, { onConflict: 'email' });
-  } catch (err) {
-    console.error('Supabase register upsert error:', err);
+  const { error: registerError } = await supabase.from('users').upsert(newUser, { onConflict: 'email' });
+
+  if (registerError) {
+    console.error('Supabase register upsert error:', registerError.message);
+    usersCache.delete(cleanEmail);
+    return res.status(503).json({ detail: 'Could not create your account. Please try again.' });
   }
 
   const token = `token-${crypto.randomUUID()}`;
@@ -143,10 +186,11 @@ apiRouter.put('/auth/profile', async (req, res) => {
 
   usersCache.set(cleanEmail, existing);
 
-  try {
-    await supabase.from('users').upsert(existing, { onConflict: 'email' });
-  } catch (err) {
-    console.error('Supabase update profile error:', err);
+  const { error: profileError } = await supabase.from('users').upsert(existing, { onConflict: 'email' });
+
+  if (profileError) {
+    console.error('Supabase update profile error:', profileError.message);
+    return res.status(503).json({ detail: 'Could not save your profile. Please try again.' });
   }
 
   res.json({ user: sanitizeUser(existing) });
@@ -321,12 +365,13 @@ apiRouter.post('/subscribers', async (req, res) => {
   const recordId = crypto.randomUUID();
   const cleanEmail = (email || '').toLowerCase().trim();
 
-  try {
-    await supabase
-      .from('subscribers')
-      .upsert({ id: recordId, email: cleanEmail, consent: Boolean(consent) }, { onConflict: 'email' });
-  } catch (err) {
-    console.error('Supabase upsert error (subscribers):', err);
+  const { error: subscribeError } = await supabase
+    .from('subscribers')
+    .upsert({ id: recordId, email: cleanEmail, consent: Boolean(consent) }, { onConflict: 'email' });
+
+  if (subscribeError) {
+    console.error('Supabase upsert error (subscribers):', subscribeError.message);
+    return res.status(503).json({ detail: 'Could not complete signup. Please try again.' });
   }
 
   res.json({
@@ -362,6 +407,211 @@ apiRouter.post('/contact', async (req, res) => {
     status: 'received',
     message: 'Thanks — your note is with our studio.'
   });
+});
+
+// --- Stock CRUD (Admin) ---
+
+// Helper: generate slug id from brand + fragrance
+function generateStockId(brand, fragrance) {
+  return `${brand}-${fragrance}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+const STOCK_SIZES = ['6ml', '12ml', '30ml', '50ml', '100ml'];
+
+function toQuantity(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.floor(n);
+}
+
+// GET /api/admin/stock — List all stock items
+apiRouter.get('/admin/stock', async (req, res) => {
+  const { search } = req.query;
+  try {
+    let query = supabase.from('stock').select('*').order('brand').order('fragrance');
+    if (search) {
+      query = query.or(`brand.ilike.%${search}%,fragrance.ilike.%${search}%`);
+    }
+    const { data, error } = await query;
+    if (error) {
+      if (error.message.includes("Could not find the table") || error.code === 'PGRST204' || error.code === 'PGRST205') {
+        return res.json({ items: [], total: 0 });
+      }
+      return res.status(500).json({ detail: error.message });
+    }
+    res.json({ items: data || [], total: (data || []).length });
+  } catch (err) {
+    console.error('Supabase error (admin stock list):', err);
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+// GET /api/admin/stock/:id — Get a single stock item
+apiRouter.get('/admin/stock/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { data, error } = await supabase
+      .from('stock')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) {
+      return res.status(500).json({ detail: error.message });
+    }
+    if (!data) {
+      return res.status(404).json({ detail: 'Stock item not found' });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('Supabase error (admin stock detail):', err);
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+// POST /api/admin/stock — Create a new stock item
+apiRouter.post('/admin/stock', async (req, res) => {
+  const { barcode, brand, fragrance, price_6ml, price_12ml, price_30ml, price_50ml, price_100ml, in_stock } = req.body;
+  if (!brand || !fragrance) {
+    return res.status(400).json({ detail: 'brand and fragrance are required' });
+  }
+  const id = generateStockId(brand, fragrance);
+  const newItem = {
+    id,
+    barcode: barcode || null,
+    brand,
+    fragrance,
+    price_6ml: price_6ml ?? null,
+    price_12ml: price_12ml ?? null,
+    price_30ml: price_30ml ?? null,
+    price_50ml: price_50ml ?? null,
+    price_100ml: price_100ml ?? null,
+    in_stock: in_stock !== undefined ? Boolean(in_stock) : true
+  };
+  for (const size of STOCK_SIZES) {
+    newItem[`qty_${size}`] = toQuantity(req.body[`qty_${size}`]);
+  }
+  try {
+    const { data, error } = await supabase.from('stock').insert(newItem).select().single();
+    if (error) {
+      return res.status(500).json({ detail: error.message });
+    }
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Supabase error (admin stock create):', err);
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+// PUT /api/admin/stock/:id — Update a stock item
+apiRouter.put('/admin/stock/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = {};
+  const allowedFields = ['barcode', 'brand', 'fragrance', 'price_6ml', 'price_12ml', 'price_30ml', 'price_50ml', 'price_100ml', 'in_stock'];
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) {
+      updates[field] = field === 'in_stock' ? Boolean(req.body[field]) : req.body[field];
+    }
+  }
+  for (const size of STOCK_SIZES) {
+    const key = `qty_${size}`;
+    if (req.body[key] !== undefined) updates[key] = toQuantity(req.body[key]);
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ detail: 'No valid fields to update' });
+  }
+  try {
+    const { data, error } = await supabase
+      .from('stock')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) {
+      return res.status(500).json({ detail: error.message });
+    }
+    if (!data) {
+      return res.status(404).json({ detail: 'Stock item not found' });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('Supabase error (admin stock update):', err);
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+// DELETE /api/admin/stock/:id — Delete a stock item
+apiRouter.delete('/admin/stock/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { error } = await supabase.from('stock').delete().eq('id', id);
+    if (error) {
+      return res.status(500).json({ detail: error.message });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Supabase error (admin stock delete):', err);
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+// POST /api/admin/stock/bulk-delete — Delete multiple stock items
+apiRouter.post('/admin/stock/bulk-delete', async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ detail: 'ids array is required' });
+  }
+  try {
+    const { error, count } = await supabase.from('stock').delete().in('id', ids);
+    if (error) {
+      return res.status(500).json({ detail: error.message });
+    }
+    res.json({ success: true, deleted: count ?? ids.length });
+  } catch (err) {
+    console.error('Supabase error (admin stock bulk-delete):', err);
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+// --- Stock (Public / Storefront) ---
+
+// GET /api/stock — Public stock listing (in-stock items only)
+apiRouter.get('/stock', async (req, res) => {
+  const { search, brand } = req.query;
+  try {
+    let query = supabase.from('stock').select('*').eq('in_stock', true).order('brand');
+    if (search) {
+      query = query.or(`brand.ilike.%${search}%,fragrance.ilike.%${search}%`);
+    }
+    if (brand) {
+      query = query.eq('brand', brand);
+    }
+    const { data, error } = await query;
+    if (error) {
+      return res.status(500).json({ detail: error.message });
+    }
+    res.json({ items: data || [], total: (data || []).length });
+  } catch (err) {
+    console.error('Supabase error (public stock list):', err);
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+// GET /api/brands — Public list of unique brand names
+apiRouter.get('/brands', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('stock').select('brand');
+    if (error) {
+      return res.status(500).json({ detail: error.message });
+    }
+    const uniqueBrands = [...new Set((data || []).map(row => row.brand))].sort();
+    res.json(uniqueBrands);
+  } catch (err) {
+    console.error('Supabase error (brands list):', err);
+    res.status(500).json({ detail: err.message });
+  }
 });
 
 // Checkout Preview Calculation Helper
@@ -419,18 +669,16 @@ apiRouter.post('/orders/mock', async (req, res) => {
     return res.json(ordersCache.get(idempotency_key));
   }
 
-  try {
-    const { data: existing } = await supabase
-      .from('orders')
-      .select('response')
-      .eq('idempotency_key', idempotency_key)
-      .maybeSingle();
+  const { data: existingOrder, error: lookupError } = await supabase
+    .from('orders')
+    .select('response')
+    .eq('idempotency_key', idempotency_key)
+    .maybeSingle();
 
-    if (existing?.response) {
-      return res.json(existing.response);
-    }
-  } catch (err) {
-    console.error('Supabase query error (orders):', err);
+  if (lookupError) {
+    console.error('Supabase query error (orders):', lookupError.message);
+  } else if (existingOrder?.response) {
+    return res.json(existingOrder.response);
   }
 
   const preview = calculateCheckout({ items, payment_method, promo_code });
@@ -480,25 +728,29 @@ apiRouter.post('/orders/mock', async (req, res) => {
     });
   }
 
-  try {
-    await supabase
-      .from('orders')
-      .insert({
-        id: orderId,
-        idempotency_key,
-        customer_name,
-        email: cleanEmail,
-        phone,
-        address,
-        city,
-        state,
-        pincode,
-        items,
-        response: responseData,
-        created_at: new Date().toISOString()
-      });
-  } catch (err) {
-    console.error('Supabase insert error (orders):', err);
+  const { error: orderError } = await supabase
+    .from('orders')
+    .insert({
+      id: orderId,
+      idempotency_key,
+      customer_name,
+      email: cleanEmail,
+      phone,
+      address,
+      city,
+      state,
+      pincode,
+      items,
+      response: responseData,
+      created_at: new Date().toISOString()
+    });
+
+  if (orderError) {
+    console.error('Supabase insert error (orders):', orderError.message);
+    if (idempotency_key) ordersCache.delete(idempotency_key);
+    return res.status(503).json({
+      detail: 'Order could not be saved. No payment has been taken — please try again.'
+    });
   }
 
   res.json(responseData);

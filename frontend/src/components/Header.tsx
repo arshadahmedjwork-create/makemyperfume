@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 
-const links = [
-  ["Shop all", "/collection"],
-  ["Best sellers", "/collection?category=bestsellers"],
-  ["Find your scent", "/#scent-finder"],
-  ["Latest news", "/news"],
-  ["About", "/about"],
-  ["Contact", "/contact"],
+const navLinks = [
+  { label: "HOME", href: "/" },
+  { label: "SIGNATURE PERFUME", href: "/collection" },
+  { label: "PERSONALIZED PERFUME", href: "/collection?collection=personalized", highlight: true },
+  { label: "COSMOPOLITAN", href: "/collection?collection=cosmopolitan" },
+  { label: "FUSION", href: "/collection?collection=fusion" },
+  { label: "COMBO DEALS", href: "/collection?collection=combo" },
+  { label: "ACCESSORIES", href: "/collection?collection=accessories" },
+  { label: "OTHERS", href: "/collection?collection=others" },
 ];
 
 export default function Header() {
@@ -39,7 +41,9 @@ export default function Header() {
       <div className="announcement" data-testid="announcement-bar" aria-label="Store offers">
         <div className="announcement-track">
           {[0, 1].map((group) => <div className="announcement-group" key={group} aria-hidden={group === 1}>
-            <span>Complimentary shipping over ₹999</span><b>✦</b><span>Extra 10% off on prepaid orders</span><b>✦</b><span>Made in India</span><b>✦</b>
+            <span>MakeMyPerfume Just Got a New Look. Discover It Now.</span><b>✦</b>
+            <span>MakeMyPerfume Just Got a New Look. Discover It Now.</span><b>✦</b>
+            <span>MakeMyPerfume Just Got a New Look. Discover It Now.</span><b>✦</b>
           </div>)}
         </div>
       </div>
@@ -48,9 +52,30 @@ export default function Header() {
           <Button variant="ghost" size="icon" className="mobile-menu-button" onClick={() => setMenuOpen((value) => !value)} aria-label={menuOpen ? "Close menu" : "Open menu"} data-testid="mobile-menu-toggle">
             {menuOpen ? <X /> : <Menu />}
           </Button>
-          <Link to="/" className="wordmark" onClick={() => setMenuOpen(false)} data-testid="navbar-brand-logo">MAKE MY <span>PERFUME</span></Link>
-          <nav className={`desktop-nav ${menuOpen ? "is-open" : ""}`} aria-label="Main navigation" data-testid="main-navigation">
-            {links.map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} data-testid={`nav-${label.replaceAll(" ", "-")}-link`}>{label}</Link>)}
+          <Link to="/" className="header-logo" onClick={() => setMenuOpen(false)} data-testid="navbar-brand-logo">
+            <div className="logo-icon">
+              <span>M</span><span>M</span>
+              <span>P</span><span>&nbsp;</span>
+            </div>
+            <div className="logo-text">
+              <span>MAKE MY</span>
+              <span>PERFUME</span>
+            </div>
+          </Link>
+          <nav className={`myop-nav ${menuOpen ? "is-open" : ""}`} aria-label="Main navigation" data-testid="main-navigation">
+            <div className="myop-nav-links">
+              {navLinks.map(({ label, href, highlight }) => (
+                <Link
+                  key={href + label}
+                  to={href}
+                  className={highlight ? "nav-highlight" : ""}
+                  onClick={() => setMenuOpen(false)}
+                  data-testid={`nav-${label.replaceAll(" ", "-").toLowerCase()}-link`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </nav>
           <div className="header-actions">
             <Button variant="ghost" size="icon" onClick={() => setSearchOpen((value) => !value)} aria-label="Search fragrances" data-testid="nav-search-button"><Search /></Button>
@@ -69,9 +94,8 @@ export default function Header() {
             <Button variant="ghost" size="icon" className="cart-button" onClick={openCart} aria-label={`Open cart, ${itemCount} items`} data-testid="cart-drawer-toggle"><ShoppingBag /><span className="cart-count" data-testid="cart-item-count">{itemCount}</span></Button>
           </div>
         </div>
-        {searchOpen && <div className="search-bar page-width" data-testid="header-search-panel"><Search size={16} /><input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={submitSearch} placeholder="Search by mood, note or name" aria-label="Search fragrances" data-testid="nav-search-input" /><button type="button" onClick={() => submitSearch()} data-testid="nav-search-submit">Search</button></div>}
+        {searchOpen && <div className="search-bar page-width" data-testid="header-search-panel"><Search size={16} /><input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={submitSearch} placeholder="Search by brand, fragrance or mood" aria-label="Search fragrances" data-testid="nav-search-input" /><button type="button" onClick={() => submitSearch()} data-testid="nav-search-submit">Search</button></div>}
       </header>
     </>
   );
 }
-

@@ -1,46 +1,228 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ArrowDown, ArrowRight, Leaf, ShieldCheck, Sparkles, Star } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Leaf, ShieldCheck, Star, Truck } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { apiGet } from "@/lib/api";
 import { MOCK_NEWS, mockProductResponse } from "@/lib/mockData";
 import type { NewsItem, ProductListResponse } from "@/lib/types";
 
-const moods = ["Fresh", "Woody", "Sweet", "Spicy", "Aquatic", "Floral"];
 const heroSlides = [
-  { image: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1400&q=85", alt: "Minimal amber perfume bottle on a soft editorial background", number: "01", name: "CITRUS NOIR", note: "Freshness of citron" },
-  { image: "https://images.unsplash.com/photo-1622618991746-fe6004db3a47?auto=format&fit=crop&w=1400&q=85", alt: "Warm amber perfume bottle in natural light", number: "02", name: "AMBER VEIL", note: "Saffron, amberwood, vanilla" },
-  { image: "https://images.unsplash.com/photo-1643797517714-a273548abc3c?auto=format&fit=crop&w=1400&q=85", alt: "Dark fragrance bottle in a nocturnal still life", number: "03", name: "NOCTURNE", note: "Black tea and smoked woods" },
+  { image: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1400&q=85", alt: "Luxury perfume bottle", heading: "YOUR SIGNATURE" },
+  { image: "https://images.unsplash.com/photo-1622618991746-fe6004db3a47?auto=format&fit=crop&w=1400&q=85", alt: "Premium fragrance collection", heading: "FIND YOUR SCENT" },
+  { image: "https://images.unsplash.com/photo-1643797517714-a273548abc3c?auto=format&fit=crop&w=1400&q=85", alt: "Artisan perfume crafting", heading: "CRAFTED FOR YOU" },
 ];
+
+const scentCategories = [
+  { name: "FRESH", description: "Energize. Vitalize. Awaken.", image: "https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&w=600&q=85", collection: "Fresh" },
+  { name: "FLORAL", description: "Fruity. Bloom. Candylicious.", image: "https://images.unsplash.com/photo-1455659817273-f96807779a8a?auto=format&fit=crop&w=600&q=85", collection: "Floral" },
+  { name: "WOODY", description: "Exotic. Sensual. Subtle.", image: "https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?auto=format&fit=crop&w=600&q=85", collection: "Woody" },
+];
+
+const genderCategories = [
+  { name: "FOR HIM", image: "https://images.unsplash.com/photo-1594913615593-e4b8c44625be?auto=format&fit=crop&w=600&q=85", filter: "men" },
+  { name: "FOR HER", image: "https://images.unsplash.com/photo-1622618991746-fe6004db3a47?auto=format&fit=crop&w=600&q=85", filter: "women" },
+  { name: "UNISEX", image: "https://images.unsplash.com/photo-1643797517714-a273548abc3c?auto=format&fit=crop&w=600&q=85", filter: "unisex" },
+];
+
 const reviews = [
   { quote: "A beautiful, unhurried scent. It feels like standing near the ocean just after sunrise.", author: "Ananya R.", label: "Customer review" },
-  { quote: "Amber Veil settles so softly on skin. Warm, elegant and never too sweet — exactly what I wanted.", author: "Meera K.", label: "Customer review" },
-  { quote: "Nocturne lasts through the evening without becoming heavy. I keep reaching for it before dinner.", author: "Arjun S.", label: "Customer review" },
+  { quote: "The fragrance settles so softly on skin. Warm, elegant and never too sweet.", author: "Meera K.", label: "Customer review" },
+  { quote: "Lasts through the evening without becoming heavy. I keep reaching for it before dinner.", author: "Arjun S.", label: "Customer review" },
 ];
 
 export default function Home() {
   const [heroIndex, setHeroIndex] = useState(0);
   const [reviewIndex, setReviewIndex] = useState(0);
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const heroTimer = window.setInterval(() => setHeroIndex((current) => (current + 1) % heroSlides.length), 3800);
-    const reviewTimer = window.setInterval(() => setReviewIndex((current) => (current + 1) % reviews.length), 4200);
+    const heroTimer = window.setInterval(() => setHeroIndex((c) => (c + 1) % heroSlides.length), 4500);
+    const reviewTimer = window.setInterval(() => setReviewIndex((c) => (c + 1) % reviews.length), 4200);
     return () => { window.clearInterval(heroTimer); window.clearInterval(reviewTimer); };
   }, []);
-  const { data: products } = useQuery({ queryKey: ["products", "home"], queryFn: async () => { try { return await apiGet<ProductListResponse>("/products"); } catch { return mockProductResponse; } } });
-  const { data: news } = useQuery({ queryKey: ["news", "home"], queryFn: async () => { try { return await apiGet<NewsItem[]>("/news"); } catch { return MOCK_NEWS; } } });
-  const featured = (products?.items ?? mockProductResponse.items).slice(0, 4);
-  return <>
-    <section className="hero-section page-width" data-testid="home-hero"><div className="hero-copy"><p className="eyebrow">The 2026 edit <span>·</span> MMPI</p><h1>A scent <em>to remember.</em></h1><p className="hero-description">Fragrance is not what you wear.<br />It is what remains.</p><div className="hero-actions"><Link to="/collection" className="button button-gold" data-testid="hero-shop-button">Explore collection <ArrowRight size={16} /></Link><a href="#scent-finder" className="button button-outline" data-testid="hero-finder-button">Find your scent</a></div><div className="hero-footnote"><span>Made in India</span><span>100% vegan</span><span>Small-batch EDP</span></div></div><div className="hero-visual" data-testid="hero-carousel">{heroSlides.map((slide, index) => <img key={slide.name} className={`hero-slide ${index === heroIndex ? "active" : ""}`} src={slide.image} alt={slide.alt} aria-hidden={index !== heroIndex} />)}<div className="hero-caption" key={heroSlides[heroIndex].name} data-testid="hero-active-slide"><span>{heroSlides[heroIndex].number} / 03</span><strong>{heroSlides[heroIndex].name}</strong><small>{heroSlides[heroIndex].note}</small></div><div className="hero-dots" aria-label={`Slide ${heroIndex + 1} of ${heroSlides.length}`}>{heroSlides.map((slide, index) => <span key={slide.name} className={index === heroIndex ? "active" : ""} />)}</div><div className="hero-scroll"><ArrowDown size={14} /> Scroll to explore</div></div></section>
-    <section className="manifesto-section page-width" data-testid="brand-manifesto"><div className="manifesto-aside"><p className="eyebrow">01 · Scent / memory</p><span className="vertical-rule" /></div><div><p className="eyebrow">The composition</p><h2>Fresh.<br /><em>Citrus.</em><br />Deep.</h2><p className="large-copy">Every note, a different way of being.</p></div><div className="manifesto-note"><Sparkles size={18} /><p>We compose in layers, so the story changes with you.</p><Link to="/about" className="gold-link" data-testid="manifesto-about-link">Our point of view <ArrowRight size={15} /></Link></div></section>
-    <section className="section page-width" data-testid="featured-products"><div className="section-heading"><div><p className="eyebrow">The edit</p><h2>Curated for <em>feeling.</em></h2></div><Link to="/collection" className="text-link" data-testid="featured-view-all-link">View all fragrances <ArrowUpRightIcon /></Link></div><div className="product-grid">{featured.map((product) => <ProductCard key={product.id} product={product} featured />)}</div></section>
-    <section className="scent-finder-section page-width" id="scent-finder" data-testid="scent-finder"><div className="finder-intro"><p className="eyebrow">A little guidance</p><h2>What are you<br /><em>in the mood for?</em></h2><p>Tell us a feeling. We’ll point you toward a bottle.</p></div><div className="mood-list">{moods.map((mood, index) => <Link to={`/collection?collection=${mood}`} key={mood} data-testid={`mood-${mood.toLowerCase()}-link`}><span>0{index + 1}</span>{mood}<ArrowUpRightIcon /></Link>)}</div><div className="finder-image"><img src="https://images.unsplash.com/photo-1758871993077-e084cc7eca86?auto=format&fit=crop&w=900&q=85" alt="Perfume bottle and botanicals in a warm editorial scene" loading="lazy" /></div></section>
-    <section className="point-of-view page-width" data-testid="point-of-view"><div className="point-image"><img src="https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?auto=format&fit=crop&w=1000&q=85" alt="Elegant perfume bottle on a stone surface" loading="lazy" /></div><div className="point-copy"><p className="eyebrow">Our point of view</p><h2>Fragrance is not what you wear.<br /><em>It’s what people remember.</em></h2><Link to="/about" className="button button-dark" data-testid="point-view-button">Enter the world <ArrowRight size={16} /></Link></div></section>
-    <section className="reviews-section page-width" data-testid="review-carousel"><div className="review-heading"><p className="eyebrow">A quiet following</p><span>{String(reviewIndex + 1).padStart(2, "0")} / 03</span></div><div className="review-slide" key={reviews[reviewIndex].author} data-testid="active-home-review"><blockquote>“{reviews[reviewIndex].quote}”</blockquote><div className="review-author"><span className="stars"><Star fill="currentColor" size={13} /><Star fill="currentColor" size={13} /><Star fill="currentColor" size={13} /><Star fill="currentColor" size={13} /><Star fill="currentColor" size={13} /></span><span>{reviews[reviewIndex].author} · {reviews[reviewIndex].label}</span></div></div></section>
-    <section className="section page-width news-preview" data-testid="latest-news-preview"><div className="section-heading"><div><p className="eyebrow">The letter</p><h2>The world of fragrance, <em>delivered.</em></h2></div><Link to="/news" className="text-link" data-testid="news-preview-link">Read the journal <ArrowRight size={15} /></Link></div><div className="news-grid">{(news ?? MOCK_NEWS).slice(0, 3).map((item) => <Link to={`/news/${item.slug}`} key={item.id} className="news-card" data-testid={`news-card-${item.slug}`}><img src={item.image_url} alt="" loading="lazy" /><div><p className="eyebrow">{item.category} <span>·</span> {item.read_time}</p><h3>{item.title}</h3><p>{item.excerpt}</p></div></Link>)}</div></section>
-    <section className="trust-strip page-width" data-testid="trust-strip"><div><ShieldCheck size={20} /><span><strong>Thoughtfully made</strong> Vegan, small-batch formulas</span></div><div><Leaf size={20} /><span><strong>India-wide delivery</strong> Free over ₹999</span></div><div><Sparkles size={20} /><span><strong>Easy to love</strong> 10% off prepaid orders</span></div></section>
-  </>;
-}
 
-function ArrowUpRightIcon() { return <ArrowRight size={15} />; }
+  const { data: products } = useQuery({
+    queryKey: ["products", "home"],
+    queryFn: async () => {
+      try { return await apiGet<ProductListResponse>("/products"); }
+      catch { return mockProductResponse; }
+    },
+  });
+
+  const { data: news } = useQuery({
+    queryKey: ["news", "home"],
+    queryFn: async () => {
+      try { return await apiGet<NewsItem[]>("/news"); }
+      catch { return MOCK_NEWS; }
+    },
+  });
+
+  const featured = (products?.items ?? mockProductResponse.items).slice(0, 4);
+
+  return (
+    <>
+      {/* Hero Banner / Carousel */}
+      <section className="myop-hero" data-testid="home-hero">
+        <div className="myop-hero-slides">
+          {heroSlides.map((slide, i) => (
+            <div key={slide.heading} className={`myop-hero-slide ${i === heroIndex ? "active" : ""}`}>
+              <img src={slide.image} alt={slide.alt} />
+              <div className="myop-hero-overlay">
+                <h1>{slide.heading}</h1>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="myop-hero-arrow left" onClick={() => setHeroIndex((c) => (c - 1 + heroSlides.length) % heroSlides.length)} aria-label="Previous slide">
+          <ChevronLeft size={24} />
+        </button>
+        <button className="myop-hero-arrow right" onClick={() => setHeroIndex((c) => (c + 1) % heroSlides.length)} aria-label="Next slide">
+          <ChevronRight size={24} />
+        </button>
+        <div className="myop-hero-dots">
+          {heroSlides.map((_, i) => (
+            <button key={i} className={i === heroIndex ? "active" : ""} onClick={() => setHeroIndex(i)} aria-label={`Go to slide ${i + 1}`} />
+          ))}
+        </div>
+      </section>
+
+      {/* Explore Scents */}
+      <section className="myop-section page-width" data-testid="explore-scents">
+        <h2 className="myop-section-title">EXPLORE SCENTS</h2>
+        <div className="myop-scent-grid">
+          {scentCategories.map((cat) => (
+            <Link to={`/collection?collection=${cat.collection}`} key={cat.name} className="myop-scent-card">
+              <img src={cat.image} alt={cat.name} loading="lazy" />
+              <div className="myop-scent-overlay">
+                <h3>{cat.name}</h3>
+                <p>{cat.description}</p>
+                <ArrowRight size={18} />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Best Sellers */}
+      <section className="myop-section page-width" data-testid="featured-products">
+        <div className="myop-section-header">
+          <h2 className="myop-section-title">OUR BEST SELLERS</h2>
+          <div className="myop-carousel-nav">
+            <Link to="/collection" className="myop-view-all">View All <ArrowRight size={14} /></Link>
+          </div>
+        </div>
+        <div className="product-grid">
+          {featured.map((product) => (
+            <ProductCard key={product.id} product={product} featured />
+          ))}
+        </div>
+      </section>
+
+      {/* Cosmopolitan Banner */}
+      <section className="myop-banner" data-testid="cosmopolitan-banner">
+        <div className="myop-banner-inner">
+          <p className="myop-banner-small">MAKE MY PERFUME</p>
+          <h2 className="myop-banner-title">COSMO<br />POLITAN</h2>
+          <p className="myop-banner-sub">SCENTS OF THE WORLD</p>
+        </div>
+      </section>
+
+      {/* Personalize CTA */}
+      <section className="myop-personalize" data-testid="personalize-cta">
+        <div className="myop-personalize-inner">
+          <h2>A GIFT THAT LASTS A LIFETIME</h2>
+          <Link to="/collection?collection=personalized" className="myop-personalize-btn">
+            PERSONALIZE NOW <ArrowRight size={16} />
+          </Link>
+        </div>
+      </section>
+
+      {/* For Him / For Her / Unisex */}
+      <section className="myop-section page-width" data-testid="gender-categories">
+        <div className="myop-gender-grid">
+          {genderCategories.map((cat) => (
+            <Link to={`/collection?search=${cat.filter}`} key={cat.name} className="myop-gender-card">
+              <img src={cat.image} alt={cat.name} loading="lazy" />
+              <div className="myop-gender-overlay">
+                <h3>{cat.name}</h3>
+                <ArrowRight size={18} />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Quote / Awaken Section */}
+      <section className="myop-quote-section page-width" data-testid="brand-quote">
+        <h2>AWAKEN YOUR OLFACTORY SENSES</h2>
+        <p className="myop-quote-text">"Perfume is the art that makes memory speak." – Francis Kurkdjian</p>
+      </section>
+
+      {/* Reviews */}
+      <section className="reviews-section page-width" data-testid="review-carousel">
+        <div className="review-heading">
+          <p className="eyebrow">Customer Love</p>
+          <span>{String(reviewIndex + 1).padStart(2, "0")} / 03</span>
+        </div>
+        <div className="review-slide" key={reviews[reviewIndex].author} data-testid="active-home-review">
+          <blockquote>"{reviews[reviewIndex].quote}"</blockquote>
+          <div className="review-author">
+            <span className="stars">
+              {Array.from({ length: 5 }).map((_, i) => <Star key={i} fill="currentColor" size={13} />)}
+            </span>
+            <span>{reviews[reviewIndex].author} · {reviews[reviewIndex].label}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* News / Journal */}
+      <section className="section page-width news-preview" data-testid="latest-news-preview">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">From the journal</p>
+            <h2>The world of fragrance, <em>delivered.</em></h2>
+          </div>
+          <Link to="/news" className="text-link" data-testid="news-preview-link">Read the journal <ArrowRight size={15} /></Link>
+        </div>
+        <div className="news-grid">
+          {(news ?? MOCK_NEWS).slice(0, 3).map((item) => (
+            <Link to={`/news/${item.slug}`} key={item.id} className="news-card" data-testid={`news-card-${item.slug}`}>
+              <img src={item.image_url} alt="" loading="lazy" />
+              <div>
+                <p className="eyebrow">{item.category} <span>·</span> {item.read_time}</p>
+                <h3>{item.title}</h3>
+                <p>{item.excerpt}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Trust Strip */}
+      <section className="myop-trust-strip page-width" data-testid="trust-strip">
+        <div>
+          <Truck size={28} />
+          <div>
+            <strong>FREE SHIPPING</strong>
+            <span>Free shipping on orders above ₹599 across India</span>
+          </div>
+        </div>
+        <div>
+          <ShieldCheck size={28} />
+          <div>
+            <strong>EASY RETURNS</strong>
+            <span>Simple return process with the perfumes</span>
+          </div>
+        </div>
+        <div>
+          <Leaf size={28} />
+          <div>
+            <strong>SECURE PAYMENT</strong>
+            <span>Your payment is processed through secure gateway</span>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

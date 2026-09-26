@@ -90,6 +90,22 @@ CREATE TABLE IF NOT EXISTS public.orders (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 7. STOCK TABLE (Wholesale / B2B inventory with multi-size pricing)
+CREATE TABLE IF NOT EXISTS public.stock (
+  id TEXT PRIMARY KEY,
+  barcode TEXT,
+  brand TEXT NOT NULL,
+  fragrance TEXT NOT NULL,
+  price_6ml NUMERIC,
+  price_12ml NUMERIC,
+  price_30ml NUMERIC,
+  price_50ml NUMERIC,
+  price_100ml NUMERIC,
+  in_stock BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ============================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- Allows API access via Anon Key
@@ -118,6 +134,24 @@ CREATE POLICY "Public full access on contact_submissions" ON public.contact_subm
 
 DROP POLICY IF EXISTS "Public full access on orders" ON public.orders;
 CREATE POLICY "Public full access on orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+
+ALTER TABLE public.stock ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public full access on stock" ON public.stock;
+CREATE POLICY "Public full access on stock" ON public.stock FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================================
+-- TABLE GRANTS
+-- PostgREST only exposes a table if the API role holds a privilege on it.
+-- RLS policies alone are not sufficient: without these grants every table
+-- is absent from the schema cache and the API returns PGRST205.
+-- ============================================================
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated;
+
+NOTIFY pgrst, 'reload schema';
 
 -- ============================================================
 -- INITIAL SEED DATA FOR PRODUCTS
