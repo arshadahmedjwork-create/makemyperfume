@@ -249,6 +249,10 @@ h1, h2, h3, p { margin-top: 0; } h1, h2, h3 { font-family: var(--font-heading); 
 .admin-login-card > p { margin: -6px 0 4px; color: var(--muted-foreground); font-size: 13px; line-height: 1.5; }
 .admin-login-card label { display: flex; flex-direction: column; gap: 6px; }
 .admin-login-card label span { font: 500 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+.admin-password-field { position: relative; }
+.admin-password-field input { padding-right: 40px; }
+.admin-password-field button { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; }
+.admin-password-field button:hover { color: var(--foreground); }
 .admin-login-error { margin: 0; padding: 10px 12px; background: color-mix(in srgb, #d64545 12%, transparent); border-left: 2px solid #d64545; color: #d64545; font-size: 12px; }
 .admin-login-back { margin-top: 4px; text-align: center; color: var(--muted-foreground); font-size: 12px; }
 .admin-login-back:hover { color: var(--gold); }
